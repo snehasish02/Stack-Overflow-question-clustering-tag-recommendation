@@ -1,0 +1,5 @@
+git+https://github.com/SohierDane/BigQuery_Helper#egg=bq_helper
+findspark==1.3.0
+inflect==4.1.0
+spacy==2.2.4
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.2.0/en_core_web_sm-2.2.0.tar.gz
