@@ -10,6 +10,7 @@ import pyspark
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
+from pyspark.sql.functions import *
 from pyspark.sql import functions as sf
 from pyspark.ml.feature import Word2Vec,Word2VecModel
 
@@ -126,52 +127,52 @@ data_frame = spark.createDataFrame(df)
 print("Saving data done")
 
 udf_myFunction = udf(pre_process, StringType())
-# #removing all the html tags from body and answers and titles and forming new columns for the same
-# data_frame_procc = data_frame.withColumn('processed_body',udf_myFunction(data_frame.body))
-# data_frame_procc_1 = data_frame_procc.withColumn('processed_title',udf_myFunction(data_frame.title))
-# data_frame_final = data_frame_procc_1.withColumn('processed_answers',udf_myFunction(data_frame.answers))
-# data_frame_final = data_frame_final.withColumn('sentiment',udf(TextBlob_1, FloatType())(data_frame_final.answers))
+#removing all the html tags from body and answers and titles and forming new columns for the same
+data_frame_procc = data_frame.withColumn('processed_body',udf_myFunction(data_frame.body))
+data_frame_procc_1 = data_frame_procc.withColumn('processed_title',udf_myFunction(data_frame.title))
+data_frame_final = data_frame_procc_1.withColumn('processed_answers',udf_myFunction(data_frame.answers))
+data_frame_final = data_frame_final.withColumn('sentiment',udf(TextBlob_1, FloatType())(data_frame_final.answers))
 
-# #concatenating title,body, answers into joined_data
-# df_new_col = data_frame_final.withColumn(
-# 	'joined_data',
-#     sf.concat(sf.col('title'),
-#     sf.lit(' '),
-#     sf.col('processed_body'),
-#     sf.lit(' '),
-#     sf.col('processed_answers')))
+#concatenating title,body, answers into joined_data
+df_new_col = data_frame_final.withColumn(
+	'joined_data',
+    sf.concat(sf.col('title'),
+    sf.lit(' '),
+    sf.col('processed_body'),
+    sf.lit(' '),
+    sf.col('processed_answers')))
 
-# # now preprocessing the joined_data and tokenizing them and normalizing the score
-# data_frame_tokenized = df_new_col.withColumn('joined_data',udf(preprocess_text, ArrayType(StringType()))(df_new_col.joined_data))
-# min_score = data_frame_tokenized.select("score").rdd.min()[0]
-# max_score = data_frame_tokenized.select("score").rdd.max()[0]
-# mean_score = data_frame_tokenized.groupBy().avg("score").take(1)[0][0]
+# now preprocessing the joined_data and tokenizing them and normalizing the score
+data_frame_tokenized = df_new_col.withColumn('joined_data',udf(preprocess_text, ArrayType(StringType()))(df_new_col.joined_data))
+min_score = data_frame_tokenized.select("score").rdd.min()[0]
+max_score = data_frame_tokenized.select("score").rdd.max()[0]
+mean_score = data_frame_tokenized.groupBy().avg("score").take(1)[0][0]
 
-# #normalizing the score
-# data_frame_toknorm = data_frame_tokenized.withColumn("score",(data_frame_tokenized.score-mean_score)/(max_score-min_score))
+#normalizing the score
+data_frame_toknorm = data_frame_tokenized.withColumn("score",(data_frame_tokenized.score-mean_score)/(max_score-min_score))
 
-# #saving the processed dataframe into a parquet file
-# # save_filepath = os.getcwd()+"/dataset/processed_data.parquet"
-# # data_frame_toknorm.write.format('parquet').mode("overwrite").save(save_filepath)
+#saving the processed dataframe into a parquet file
+# save_filepath = os.getcwd()+"/dataset/processed_data.parquet"
+# data_frame_toknorm.write.format('parquet').mode("overwrite").save(save_filepath)
 
-# #create a word2vec model
-# word2vec = Word2Vec(vectorSize=200, seed=42, inputCol="joined_data", outputCol="features")
+#create a word2vec model
+word2vec = Word2Vec(vectorSize=200, seed=42, inputCol="joined_data", outputCol="features")
 
-# #fitting the model with the data present
-# model_word2vec = word2vec.fit(data_frame_toknorm)
-# print("word2vec model done")
+#fitting the model with the data present
+model_word2vec = word2vec.fit(data_frame_toknorm)
+print("word2vec model done")
 
-# #saving the word2vec model
-# # save_path = os.getcwd()+'/dataset/word2vecmodel'
-# # model_word2vec.write().overwrite().save(save_path)
+#saving the word2vec model
+# save_path = os.getcwd()+'/dataset/word2vecmodel'
+# model_word2vec.write().overwrite().save(save_path)
 
-# titles_dataframe = data_frame_toknorm
-# titles_dataframe_tokenized = titles_dataframe.withColumn('joined_data',udf(preprocess_text, ArrayType(StringType()))(titles_dataframe.processed_title))
-# titles_df_results = model_word2vec.transform(titles_dataframe_tokenized)
+titles_dataframe = data_frame_toknorm
+titles_dataframe_tokenized = titles_dataframe.withColumn('joined_data',udf(preprocess_text, ArrayType(StringType()))(titles_dataframe.processed_title))
+titles_df_results = model_word2vec.transform(titles_dataframe_tokenized)
 
 # Saving the results
-# save_filepath = os.getcwd()+"/dataset/title_vectors.parquet"
-# titles_df_results.write.mode("overwrite").format('parquet').save(save_filepath)
+save_filepath = os.getcwd()+"/dataset/title_vectors.parquet"
+titles_df_results.write.mode("overwrite").format('parquet').save(save_filepath)
 
 print("Stopping session")
 sc.stop()
