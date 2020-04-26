@@ -160,6 +160,20 @@ word2vec = Word2Vec(vectorSize=200, seed=42, inputCol="joined_data", outputCol="
 
 #fitting the model with the data present
 model_word2vec = word2vec.fit(data_frame_toknorm)
+
+save_path = os.getcwd()+'/dataset/word2vecmodel'
+model_word2vec.write().overwrite().save(save_path)
+# s3.Bucket(my_bucket).upload_file(save_path, "models/w2vmodel")
+
+
+for path, subdirs, files in os.walk(save_path):
+  path = path.replace("\\","/")
+  directory_name = path.replace(save_path,"word2vecmodel")
+  for file in files:
+      my_bucket.upload_file(os.path.join(path, file), directory_name+'/'+file)
+
+
+
 print("word2vec model done")
 
 #saving the word2vec model
