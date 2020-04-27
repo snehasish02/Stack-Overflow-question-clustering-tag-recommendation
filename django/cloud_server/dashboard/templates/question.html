@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+	<h2>Enter a Question</h2>
+  	<p>Search for relevant questions by entering a question in the box below</p>
+	  	<form action="/display/result" method="POST">
+	    {% csrf_token %}
+	<!--     {{ form }} -->
+	    <div class="form-group">
+	      <label for="question">Question:</label>
+	      <!-- <input type="text" class="form-control" id="question" value="{{ question }}">
+	      <input type="submit" name="Search"> -->
+	      <input type="text" class="form-control" name="question" value="{{ question }}">
+	      <p></p>
+	      <input type="submit" class="btn btn-secondary" value="Search" />
+	    </div>
+  	</form>
+{% endblock %}
