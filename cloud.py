@@ -12,7 +12,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.sql.functions import *
 from pyspark.sql import functions as sf
-from pyspark.ml.feature import Word2Vec,Word2VecModel
+from pyspark.ml.feature import Word2Vec, Word2VecModel
 
 print("Setting up spark session...")
 conf = pyspark.SparkConf().setAppName('Stackoverflow')
