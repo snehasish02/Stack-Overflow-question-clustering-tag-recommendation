@@ -102,10 +102,7 @@ def TextBlob_1(x):
 
 
 # Get Data from GC
-ACCESS_KEY_ID = "AKIAYNJWAMXNRPDPUUED"
-ACCESS_KEY = "Q4u8pfhnsjEcBkNODJz0QrB07oc5fpRialXHL4bq"
-s3 = boto3.resourcs3 = boto3.resource('s3', aws_access_key_id=ACCESS_KEY_ID , aws_secret_access_key=ACCESS_KEY, region_name='us-east-2')
-# s3 = boto3.resource('s3')
+s3 = boto3.resource('s3')
 my_bucket = s3.Bucket('cloud-stack-overflow')
 my_bucket.download_file("gc.json", "gc.json")
 
